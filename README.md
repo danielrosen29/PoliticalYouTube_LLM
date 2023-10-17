@@ -18,8 +18,6 @@
 
 
 Do next:
-> Write proposal 
 > Test multiple fine tuned models with different size training sets. 
 > Test temperature differences in those models. 
 > Variation if system role.
-> Sign up on perspective api website. 
