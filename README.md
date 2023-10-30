@@ -3,6 +3,7 @@
 ### Project Questions:
 
 - TODO:
+- Double check that I'm using the Perspective API well. 
 - Attempt to implement the GPT version of toxicity rating. 
 - Look into Bradley Terry model.
 - Train more models such that there is one for left and right at each size. 
