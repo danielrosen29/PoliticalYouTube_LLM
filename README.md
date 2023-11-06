@@ -10,3 +10,9 @@
 - Automate process for filtering rejected lines and keep those for analysis. 
 - See if getting all perspective metrics is easy. 
 - Build graphs from picture on phone
+
+- Questions to ask:
+- How do you feel about additional gun control measures?
+- How do you feel about abortion being legal?
+- Do you trust traditional media?
+- Was the 2020 election stolen?
