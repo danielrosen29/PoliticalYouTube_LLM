@@ -208,3 +208,29 @@ This plan aims to develop improved models for generating similar examples of pot
 
 ## Critical Analysis: 
 
+***Key Takeaways***
+
+**Modeling Online Discourse Dynamics:**
+
+This research underscores the complexities and challenges in replicating and understanding online political discourse, especially hostile or toxic interactions.
+The project demonstrates how fine-tuning transformer models like GPT-3.5 on specific datasets can effectively mimic certain aspects of online speech, including toxicity and incoherence.
+
+**Impact of Training Data Size and Political Bias:**
+
+The study reveals that the size of the training set and its political leanings significantly influence the model's output. Larger datasets and specific political biases lead to more pronounced characteristics in the generated text, such as increased toxicity.
+
+**Challenges with Black-Box Models and API Limitations:**
+
+The research highlights the limitations and unpredictability of using black-box models, particularly in the context of OpenAI's validation system. The lack of transparency in the moderation system poses challenges for researchers and could be exploited by malicious actors.
+
+**Issues with Response Relevance and Coherence:**
+
+A significant finding is that the models often generated responses that were incoherent or failed to address the posed questions adequately. This aspect limits the utility of the models in creating realistic and believable political discourse.
+
+## Resources:
+
+- **OpenAI API**: https://platform.openai.com/docs/overview
+- **Perspective API**: https://developers.perspectiveapi.com/s/?language=en_US
+- Shuyang Cai, Wanyun Cui: https://arxiv.org/abs/2307.02599v2, 2023
+- Ilia Shumailov, Zakhar Shumaylov, Yiren Zhao, Yarin Gal, Nicolas Papernot, Ross Anderson: The Curse of Recursion: Training on Generated Data Makes Models Forget, 2023
+- Alawida, M.; Shawar, B.A.; Abiodun, O.I.; Mehmood, A.; Omolara, A.E.; Al Hwaitat, A.K. Unveiling the Dark Side of ChatGPT: Exploring Cyberattacks and Enhancing User Awareness. Preprints 2023, 2023091768. https://doi.org/10.20944/preprints202309.1768.v1
