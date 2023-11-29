@@ -36,9 +36,19 @@ It is obvious from these responses that the fine-tuning has an effect on the mod
 
 ### Methods: 
 
+**Models:**
+
+Due to limited resources being allotted to this project, it was decided that this research would primarily be done as proof of concept. Because of this, the primary independed variables we targeted were fine-tuning training set size and political affiliations of the examples. This approach allowed us to investigate the impact of varying amounts of data and political leaning, on the performance of the models. For instance, we could fine-tune a model using 1,000 training examples sourced exclusively from conservative-leaning comments, while another model might be trained with just 25 examples, but from liberal-leaning sources.
+
+Our data collection focused on comments from two highly influential and politically divergent YouTube channels: The Young Turks (liberal) and Turning Point USA (conservative). These channels were selected due to their substantial viewership and active comment sections, providing a rich source of politically charged discourse.
+
+The decision for the size of the models' fine-tuning training sets was a pivotal step in our research, requiring careful consideration to balance the scope of our models with the financial constraints imposed by the use of the OpenAI API for fine-tuning. Ultimately, we decided we would construct four distinct models for both major political orientation—progressive and conservative—each with training sets of sizes increasing exponentially from 5^2 to 5^5 examples. The decision to cap the size at 5^5 was primarily driven by budgetary limits.
+
+![image](https://github.com/danielrosen29/PoliticalYouTube_LLM/assets/75226826/4a1e3d56-3dec-40e4-b7ff-ad0b16ea7b31)
+
 **Training Example Setup and Prompting:**
 
-Due to limited resources being alloted to this project, it was decided that this research would primarily be done as proof of concept. Because of this, the primary independed variables we targeted were fine-tuning training set size and political affiliations of the examples. This meant the prompt was not a variable and once a small amount of testing was done to determine a suitable setup for the training example files, this would remain constant throughout the rest of the experiements. Exploring other types of prompts is a task which is part of the potential future research.
+As stated previously, the independent variables manipulated were training set size and political affiliation. This meant the prompt was not a variable and once a small amount of testing was done to determine a suitable setup for the training example files, this would remain constant throughout the rest of the experiements. Exploring other types of prompts is a task which is part of the potential future research.
 
 The setup which was ultimately landed on can be seen in Figure 1. 
 
@@ -47,14 +57,6 @@ Figure 1.
 
 Other prompts were mostly similar. Simply adding or removing some of the messages, as well as changing several wordings and adding other metadata. Our final choice appeared to garner the best responses.
 Like much of this work done with black-box model wrappers, this was chosen emperically as this setup's responses appeared to most closely match our desired outputs. 
-
-**Models:**
-
-As stated previously, the independent variables manipulated were training set size and political affiliation. This approach allowed us to investigate the impact of varying amounts of data and political leaning, on the performance of the models. For instance, we could fine-tune a model using 1,000 training examples sourced exclusively from conservative-leaning comments, while another model might be trained with just 25 examples, but from liberal-leaning sources.
-
-Our data collection focused on comments from two highly influential and politically divergent YouTube channels: The Young Turks (liberal) and Turning Point USA (conservative). These channels were selected due to their substantial viewership and active comment sections, providing a rich source of politically charged discourse.
-
-The decision for the size of the models' fine-tuning training sets was a pivotal step in our research, requiring careful consideration to balance the scope of our models with the financial constraints imposed by the use of the OpenAI API for fine-tuning. Ultimately, we decided we would construct four distinct models for both major political orientation—progressive and conservative—each with training sets of sizes increasing exponentially from 5^2 to 5^5 examples. The decision to cap the size at 5^5 was primarily driven by budgetary limits.
 
 **Metrics:**
 
@@ -252,5 +254,5 @@ A significant finding is that the models often generated responses that were inc
 - **OpenAI API**: https://platform.openai.com/docs/overview
 - **Perspective API**: https://developers.perspectiveapi.com/s/?language=en_US
 - Shuyang Cai, Wanyun Cui: https://arxiv.org/abs/2307.02599v2, 2023
-- Ilia Shumailov, Zakhar Shumaylov, Yiren Zhao, Yarin Gal, Nicolas Papernot, Ross Anderson: The Curse of Recursion: Training on Generated Data Makes Models Forget, 2023
+- Ilia Shumailov, Zakhar Shumaylov, Yiren Zhao, Yarin Gal, Nicolas Papernot, Ross Anderson: The Curse of Recursion: Training on Generated Data Makes Models Forget, https://arxiv.org/abs/2305.17493v2, 2023
 - Alawida, M.; Shawar, B.A.; Abiodun, O.I.; Mehmood, A.; Omolara, A.E.; Al Hwaitat, A.K. Unveiling the Dark Side of ChatGPT: Exploring Cyberattacks and Enhancing User Awareness. Preprints 2023, 2023091768. https://doi.org/10.20944/preprints202309.1768.v1
