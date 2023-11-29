@@ -1,4 +1,4 @@
-# Understanding and Modeling Online Hostility: An AI Perspective
+# Understanding and Modeling Online Political Toxicity: An AI Perspective
 Research conducted by **Daniel Rosen** and **Dr. James Bisbee** at Vanderbilt University 
 
 ### Abstract: 
