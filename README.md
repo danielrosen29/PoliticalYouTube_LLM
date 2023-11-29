@@ -231,10 +231,9 @@ This plan aims to develop improved models for generating similar examples of pot
 
 ***Key Takeaways***
 
-**Modeling Online Discourse Dynamics:**
+**Modeling Online Discourse Dynamics Using LLM Fine-Tuning:**
 
-This research underscores the complexities and challenges in replicating and understanding online political discourse, especially hostile or toxic interactions.
-The project demonstrates how fine-tuning transformer models like GPT-3.5 on specific datasets can effectively mimic certain aspects of online speech, including toxicity and incoherence.
+This project demonstrates how fine-tuning transformer models like GPT-3.5 on specific datasets can effectively mimic certain aspects of online speech, including toxicity and incoherence.
 
 **Impact of Training Data Size and Political Bias:**
 
