@@ -96,3 +96,44 @@ While we collected data for all of these metrics, the initial research focused o
 
 ## Black-Box Model / API Roadblock
 
+As we proceded with fine-tuning the models, we encountered an unforeseen challenge with OpenAI's validation system. OpenAI, anticipating the potential misuse of their publicly available tools, implemented a validation process to screen the fine-tuning datasets before they are used, although the criteria for validation are not transparently disclosed. During our research, after beginning a fine-tuning job through the API, sometimes an error would be thrown highlighting training examples which do not meet with the company's policy:
+
+> 'The job failed due to an invalid training file. This file failed moderation safety checks. The OpenAI Moderation API identifies fine tuning examples that violate our content policies. To fine tune on this data, please try removing the flagged lines and uploading the file again. Flagged lines: 4, 13, 14, 18, 35 ... "
+
+Interestingly, the files we noticed were being rejected included only examples which were a subset of the 67,000 examples initially given to the 'smoke-test' model. This lead us to the conclusion that this is likely due to the utilization of a classification model to automate the approval process. This means the approval process is likely driven by complex factors that are not clearly understood externally. We decided to investigate further using a two step approach:
+
+- **Perspective API Analysis:** We compared the Perspective API scores for the accepted and rejected training examples to discern if certain types of content were systematically being flagged. The comparison is visualized in the provided chart, which plots the average scores of various attributes such as toxicity, insult, threat, spam, incoherence, and more for accepted versus rejected examples.
+
+![image](https://github.com/danielrosen29/PoliticalYouTube_LLM/assets/75226826/6b92306f-4623-4e97-b869-0c72bb09e966)
+
+- **Topic Modeling:** We also employed topic modeling on the accepted and rejected datasets to identify if specific topics were leading to consistent rejections.
+
+Despite these efforts, our analysis did not yield a definitive understanding of the validation system's decision-making process. However, a significant insight emerged from our attempts to pass the validation: by altering the composition of the training set, it was possible to navigate around the validation system. This insight is alarming as it suggests a pathway for a malicious actor to exploit the system and fine-tune a model with potentially harmful content.
+
+This discovery represents one of the major outcomes of our project. It highlights a vulnerability in the moderation system that could be exploited by those aiming to create models for nefarious purposes. As a result, it underscores the need for more robust and transparent validation mechanisms to prevent the misuse of AI tools while also facilitating legitimate research activities.
+
+## Developing the Test Sets:
+
+The formulation of the test sets was a pivotal step in our research, requiring careful consideration to balance the scope of our models with the financial constraints imposed by the use of the OpenAI API for fine-tuning. Ultimately, we decided to construct four distinct models for each political orientation—progressive and conservative—each with training sets of sizes increasing exponentially from 5^2 to 5^5 examples. The decision to cap the size at 5^5 was primarily driven by budgetary limits.
+
+**Creation Process:**
+
+To develop these models, we began by generating two comprehensive datasets, one for each political channel—The Young Turks and Turning Point USA. Each dataset was initially larger than 5^5 examples and was constructed by randomly sampling comments from the respective channels' comment sections. This approach ensured a diverse representation of the discourse from each political spectrum.
+
+**Validation and Reduction:** 
+
+The next step involved subjecting these datasets to the OpenAI validation model. The validation process was iterative; we would submit the dataset and then remove any lines that were rejected by the validation system. This cycle was repeated until we obtained a fully accepted set of comments. It's important to note that during this process, we did not aim to identify the specific reasons for rejection due to the black-box nature of the validation system. Instead, our goal was to refine the dataset to meet OpenAI's acceptance criteria, whatever they might implicitly be.
+
+Once we had an accepted set, we then reduced its size to align with our predetermined exponential model sizes. This reduction was also done randomly to maintain the representativeness and variability of the original larger set.
+
+After our final reduction we were left with the test sets:
+
+![image](https://github.com/danielrosen29/PoliticalYouTube_LLM/assets/75226826/42e6897d-c584-4588-b047-a49a080442ef)
+
+GPT models were then created using the fine tuning process and we began experimenting. 
+
+# Results: 
+
+
+
+
