@@ -235,11 +235,11 @@ This plan aims to develop improved models for generating similar examples of pot
 
 **Modeling Online Discourse Dynamics Using LLM Fine-Tuning:**
 
-This project demonstrates how fine-tuning transformer models like GPT-3.5 on specific datasets can effectively mimic certain aspects of online speech, including toxicity and incoherence.
+This project demonstrates how fine-tuning transformer models like GPT-3.5 can effectively mimic certain aspects of online speech, including toxicity and incoherence.
 
 **Impact of Training Data Size and Political Bias:**
 
-The study reveals that the size of the training set and its political leanings significantly influence the model's output. Larger datasets and specific political biases lead to more pronounced characteristics in the generated text, such as increased toxicity.
+The study reveals that the size of the training set and its political leanings significantly influence the model's output. Larger datasets and specific political biases lead to more pronounced negative characteristics, such as increased toxicity.
 
 **Challenges with Black-Box Models and API Limitations:**
 
