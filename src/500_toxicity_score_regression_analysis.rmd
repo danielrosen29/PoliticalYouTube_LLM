@@ -1,0 +1,38 @@
+---
+title: "500_toxicity_score_regression_analysis"
+author: "Danny Rosen"
+date: "2023-12-28"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+```
+```{r}
+score_df <- read.csv('../data/model_responses/regression_dataset_full.csv')
+score_df <- score_df %>% 
+  select(-X)
+
+score_df[, c('affiliation',
+             'model_size',
+             'model')] <- lapply(score_df[,
+                                          c('affiliation',                                                                                            'model_size',                                                                                               'model')],
+                                 factor)
+
+score_df
+```
+
+# Regression 1
+```{r}
+lm_toxicity_no_interactions <- lm(TOXICITY ~ affiliation + model_size + model + question, score_df)
+summary(lm_toxicity_no_interactions)
+```
+# Regression 2
+```{r}
+lm_threat_interactions <- lm(THREAT ~ affiliation + model_size + model, score_df)
+summary(lm_interactions)
+```
