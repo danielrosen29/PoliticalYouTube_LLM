@@ -11,28 +11,123 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(tidyverse)
+library(marginaleffects)
+library(tools)
 ```
+
 ```{r}
-score_df <- read.csv('../data/model_responses/regression_dataset_full.csv')
-score_df <- score_df %>% 
-  select(-X)
+score_df <- read.csv('../data/experiment_rerun/regression_dataset_full.csv')
 
 score_df[, c('affiliation',
              'model_size',
-             'model')] <- lapply(score_df[,
-                                          c('affiliation',                                                                                            'model_size',                                                                                               'model')],
+             'type')] <- lapply(score_df[,
+                                          c('affiliation',                                                                                            'model_size',                                                                                               'type')],
                                  factor)
 
 score_df
 ```
+```{r}
+write_rds(score_df, file='../data/experiment_rerun/regression_dataset_full.rds')
+```
 
-# Regression 1
+
 ```{r}
-lm_toxicity_no_interactions <- lm(TOXICITY ~ affiliation + model_size + model + question, score_df)
-summary(lm_toxicity_no_interactions)
+plot_and_add_predictions_to_list <- function(original_df, df_for_join, sentiment) {
+  sentiment_label = toTitleCase(sentiment)
+  
+  lm_formula <- as.formula(paste(sentiment, "~ affiliation*type*model_size"))
+  lm <- lm(lm_formula, data = original_df)
+  print(lm_formula)
+  print(summary(lm))
+  print(plot_predictions(lm, by=c("affiliation", "type", "model_size")))
+  results <- plot_predictions(lm, by=c("affiliation", "type", "model_size"), draw=FALSE)
+  
+  human <- results %>% filter(type == 'human')
+  model <- results %>% filter(type == 'model')
+  
+  for_plot = human %>% 
+    inner_join(model, by=c('affiliation', 'model_size'), suffix=c('_human', '_model')) %>%
+    mutate(affiliation, model_size,
+            percentage_difference = (estimate_model/estimate_human-1)*100)
+  
+  for_plot['sentiment'] = sentiment_label
+  return(rbind(df_for_join, for_plot))
+}
 ```
-# Regression 2
+
 ```{r}
-lm_threat_interactions <- lm(THREAT ~ affiliation + model_size + model, score_df)
-summary(lm_interactions)
+plotting_df <- NA
+ignore_columns <- c('affiliation',
+                    'model_size',
+                    'type',
+                    "LIKELY_TO_REJECT",
+                    "SPAM",
+                    "PROFANITY",
+                    "SEVERE_TOXICITY",
+                    "INCOHERENT",
+                    "IDENTITY_ATTACK",
+                    "UNSUBSTANTIAL",
+                    "SEXUALLY_EXPLICIT",
+                    "OBSCENE" )
+
+
+# Use Reduce to accumulate results
+plotting_df <- Reduce(function(acc, col_name) {
+  if (!(col_name %in% ignore_columns)) {
+    acc <- plot_and_add_predictions_to_list(score_df, acc, col_name)
+  }
+  return(acc)
+}, x = names(score_df), init = plotting_df)
+
+# Now plotting_df contains the accumulated results
+plotting_df <- na.omit(plotting_df)
 ```
+
+```{r}
+plotting_df %>%
+  ggplot(aes(x=model_size, y=percentage_difference, group=sentiment, color=sentiment)) +
+  geom_hline(yintercept=0)+
+  geom_line() + 
+  geom_point() +
+  labs(x = "Model Fine Tuning Set Size",
+       y = "Perentage Change",
+       colour = "Perspective Attribute",
+       title = "Percentage Change in Perspective API Attributes Scores",
+       subtitle="for Model Generated YouTube Comments when Compared to Human Comments") +
+  scale_color_brewer(palette = 'Dark2') + 
+  facet_wrap(~affiliation, nrow=2)
+```
+```{r}
+small_plotting_df <- NA
+use_columns <- c(
+  'INCOHERENT',
+  'UNSUBSTANTIAL'
+)
+
+
+# Use Reduce to accumulate results
+small_plotting_df <- Reduce(function(acc, col_name) {
+  if (col_name %in% use_columns) {
+    acc <- plot_and_add_predictions_to_list(score_df, acc, col_name)
+  }
+  return(acc)
+}, x = names(score_df), init = small_plotting_df)
+
+# Now plotting_df contains the accumulated results
+small_plotting_df <- na.omit(small_plotting_df)
+```
+```{r}
+small_plotting_df %>%
+  ggplot(aes(x=model_size, y=percentage_difference, group=sentiment, color=sentiment)) +
+  geom_hline(yintercept=0)+
+  geom_line() + 
+  geom_point() +
+  labs(x = "Model Fine Tuning Set Size",
+       y = "Perentage Change",
+       colour = "Perspective Attribute",
+       title = "Percentage Change in Coherence and Substantiveness",
+       subtitle="for Model Generated YouTube Comments when Compared to Human Comments") +
+  scale_color_brewer(palette = 'Dark2') + 
+  facet_wrap(~affiliation, nrow=2)
+```
+
