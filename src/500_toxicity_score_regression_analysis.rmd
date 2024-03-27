@@ -21,8 +21,10 @@ score_df <- read.csv('../data/experiment_rerun/regression_dataset_full.csv')
 score_df[, c('affiliation',
              'model_size',
              'type')] <- lapply(score_df[,
-                                          c('affiliation',                                                                                            'model_size',                                                                                               'type')],
-                                 factor)
+                                          c('affiliation',  
+                                            'model_size',   
+                                            'type')],
+                                factor)
 
 score_df
 ```
@@ -30,6 +32,39 @@ score_df
 write_rds(score_df, file='../data/experiment_rerun/regression_dataset_full.rds')
 ```
 
+# Toxicity
+```{r}
+lm_toxicity <- lm(TOXICITY ~ affiliation*type*model_size, score_df)
+summary(lm_toxicity)
+```
+
+```{r}
+toxicity_results <- plot_predictions(lm_toxicity, by=c("affiliation", "type", "model_size"), draw=FALSE)
+plot_predictions(lm_toxicity, by=c("affiliation", "type", "model_size"))
+```
+```{r}
+toxicity_results
+```
+
+```{r}
+human_toxicity <- toxicity_results %>% filter(type == 'human')
+model_toxicity <- toxicity_results %>% filter(type == 'model')
+results = human_toxicity %>% 
+  inner_join(model_toxicity, by=c('affiliation', 'model_size'), suffix=c('_human', '_model')) %>%
+  summarize(affiliation, model_size, percentage_difference = (estimate_model/estimate_human-1)*100)
+
+results['sentiment'] = 'Toxicity'
+results
+```
+
+```{r}
+results %>%
+  #filter(affiliation == 'progressive') %>%
+  ggplot(aes(x=model_size, y=percentage_difference, color = affiliation, group=affiliation)) +
+  geom_line() +
+  geom_point() +
+  labs(x = "Model Size", y = "Perentage Change", colour = "Political Affiliation", title = "Percentage Change in Toxicity for Model Responses", subtitle="when compared to human responses")
+```
 
 ```{r}
 plot_and_add_predictions_to_list <- function(original_df, df_for_join, sentiment) {
@@ -37,97 +72,120 @@ plot_and_add_predictions_to_list <- function(original_df, df_for_join, sentiment
   
   lm_formula <- as.formula(paste(sentiment, "~ affiliation*type*model_size"))
   lm <- lm(lm_formula, data = original_df)
-  print(lm_formula)
   print(summary(lm))
   print(plot_predictions(lm, by=c("affiliation", "type", "model_size")))
   results <- plot_predictions(lm, by=c("affiliation", "type", "model_size"), draw=FALSE)
   
-  human <- results %>% filter(type == 'human')
-  model <- results %>% filter(type == 'model')
   
-  for_plot = human %>% 
-    inner_join(model, by=c('affiliation', 'model_size'), suffix=c('_human', '_model')) %>%
-    mutate(affiliation, model_size,
-            percentage_difference = (estimate_model/estimate_human-1)*100)
+  human_toxicity <- results %>% filter(type == 'human')
+  model_toxicity <- results %>% filter(type == 'model')
+  for_plot = human_toxicity %>% 
+    inner_join(model_toxicity, by=c('affiliation', 'model_size'), suffix=c('_human', '_model')) %>%
+    summarize(affiliation, model_size, percentage_difference = (estimate_model/estimate_human-1)*100)
   
   for_plot['sentiment'] = sentiment_label
+  
+  # if (is.na(df_for_join[0])){
+  #   return(for_plot)
+  # } else {
   return(rbind(df_for_join, for_plot))
+  #}
 }
 ```
 
 ```{r}
-plotting_df <- NA
-ignore_columns <- c('affiliation',
-                    'model_size',
-                    'type',
-                    "LIKELY_TO_REJECT",
-                    "SPAM",
-                    "PROFANITY",
-                    "SEVERE_TOXICITY",
-                    "INCOHERENT",
-                    "IDENTITY_ATTACK",
-                    "UNSUBSTANTIAL",
-                    "SEXUALLY_EXPLICIT",
-                    "OBSCENE" )
+colnames(score_df)
+```
+```{r}
+summary(lm('TOXICITY ~ affiliation*type*model_size', data=score_df))
+```
 
-
-# Use Reduce to accumulate results
-plotting_df <- Reduce(function(acc, col_name) {
+```{r}
+long_plotting_df = NA
+ignore_columns = c('affiliation', 'model_size', 'type', 'IDENTITY_ATTACK', 'LIKELY_TO_REJECT', "OBSCENE", "SEXUALLY_EXPLICIT", "SPAM", 'PROFANITY', "INCOHERENT", "UNSUBSTANTIAL", 'SEVERE_TOXICITY', 'THREAT')
+long_plotting_df <- Reduce(function(acc, col_name) {
   if (!(col_name %in% ignore_columns)) {
     acc <- plot_and_add_predictions_to_list(score_df, acc, col_name)
   }
   return(acc)
-}, x = names(score_df), init = plotting_df)
+}, x = names(score_df), init = long_plotting_df)
 
-# Now plotting_df contains the accumulated results
-plotting_df <- na.omit(plotting_df)
+long_plotting_df <- na.omit(long_plotting_df)
+long_plotting_df
 ```
 
 ```{r}
-plotting_df %>%
-  ggplot(aes(x=model_size, y=percentage_difference, group=sentiment, color=sentiment)) +
-  geom_hline(yintercept=0)+
-  geom_line() + 
-  geom_point() +
-  labs(x = "Model Fine Tuning Set Size",
-       y = "Perentage Change",
-       colour = "Perspective Attribute",
-       title = "Percentage Change in Perspective API Attributes Scores",
-       subtitle="for Model Generated YouTube Comments when Compared to Human Comments") +
-  scale_color_brewer(palette = 'Dark2') + 
-  facet_wrap(~affiliation, nrow=2)
+long_plotting_df %>%
+  ggplot(aes(x=model_size, y=percentage_difference, color = sentiment, group=sentiment)) +
+  geom_hline(yintercept = 0, size = .5) + 
+  geom_line(size = 1) +
+  geom_point(size = 4) +
+  geom_point(size = .5, alpha = 0.8) + # Larger points with transparency
+  scale_color_brewer(palette = "Dark2") +
+  facet_wrap(~affiliation, ncol =1 ) +
+  labs(x = "Model Size", y = "Perentage Change in Attribue Value", colour = "Perspective Attribute", title = "Percentage change in Perspective API attribute value by Model Size", subtitle="for model YouTube comments when compared to human YouTube comments")
 ```
+Interesting takeaway that insult toxicty and inflammatory went down in both and attacks and threat increased in both. 
+
 ```{r}
-small_plotting_df <- NA
-use_columns <- c(
-  'INCOHERENT',
-  'UNSUBSTANTIAL'
-)
+ignore_columns = c('affiliation', 'model_size', 'type', 'LIKELY_TO_REJECT', "OBSCENE", "SEXUALLY_EXPLICIT", "SPAM", 'PROFANITY', "INCOHERENT", "UNSUBSTANTIAL", 'IDENTITY_ATTACK', 'SEVERE_TOXICITY', 'THREAT')
+lm_list = c()
+for (col_name in colnames(score_df)) {
+  if (!(col_name %in% ignore_columns)) {
+    print(col_name)
+    lm_formula <- as.formula(paste(col_name, "~ affiliation*type*model_size"))
+    lm <- lm(lm_formula, data = score_df)
+    lm_list <- c(lm_list, list(lm))
+  }
+}
+```
+
+```{r}
+save(lm_list, file="TOXICITY_INSULT_ATTACK_ON_AUTHOR_ATTACK_ON_COMMENTER_INFLAMMATORY_lm_objects.RData")
+```
 
 
-# Use Reduce to accumulate results
-small_plotting_df <- Reduce(function(acc, col_name) {
-  if (col_name %in% use_columns) {
+```{r}
+short_plotting_df = NA
+used_columns = c("INCOHERENT", "UNSUBSTANTIAL")
+
+short_plotting_df <- Reduce(function(acc, col_name) {
+  if (col_name %in% used_columns) {
     acc <- plot_and_add_predictions_to_list(score_df, acc, col_name)
   }
   return(acc)
-}, x = names(score_df), init = small_plotting_df)
+}, x = names(score_df), init = short_plotting_df)
 
-# Now plotting_df contains the accumulated results
-small_plotting_df <- na.omit(small_plotting_df)
+short_plotting_df <- na.omit(short_plotting_df)
+short_plotting_df
 ```
+
 ```{r}
-small_plotting_df %>%
-  ggplot(aes(x=model_size, y=percentage_difference, group=sentiment, color=sentiment)) +
-  geom_hline(yintercept=0)+
-  geom_line() + 
-  geom_point() +
-  labs(x = "Model Fine Tuning Set Size",
-       y = "Perentage Change",
-       colour = "Perspective Attribute",
-       title = "Percentage Change in Coherence and Substantiveness",
-       subtitle="for Model Generated YouTube Comments when Compared to Human Comments") +
-  scale_color_brewer(palette = 'Dark2') + 
-  facet_wrap(~affiliation, nrow=2)
+short_plotting_df %>%
+  ggplot(aes(x=model_size, y=percentage_difference, color = sentiment, group=sentiment)) +
+  geom_hline(yintercept = 0, size = .5) + 
+  geom_line(size = 1) +
+  geom_point(size = 4) +
+  geom_point(size = .5, alpha = 0.8) + # Larger points with transparency
+  scale_color_brewer(palette = "Dark2") +
+  facet_wrap(~affiliation, ncol =1 ) +
+  labs(x = "Model Size", y = "Perentage Change", colour = "Political Affiliation", title = "Percentage change in Incoherence and Unsubstantiveness by Model Size", subtitle="for model YouTube comments when compared to human YouTube comments")
 ```
 
+```{r}
+used_columns = c("INCOHERENT", "UNSUBSTANTIAL")
+lm_list = c()
+for (col_name in colnames(score_df)) {
+  if (col_name %in% used_columns) {
+    print(col_name)
+    lm_formula <- as.formula(paste(col_name, "~ affiliation*type*model_size"))
+    lm <- lm(lm_formula, data = score_df)
+    lm_list <- c(lm_list, list(lm))
+  }
+}
+```
+
+
+```{r}
+save(lm_list, file="INCOHERENT_UNSUBSTANTIAL_lm_objects.RData")
+```

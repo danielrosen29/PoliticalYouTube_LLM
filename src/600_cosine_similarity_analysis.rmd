@@ -1,0 +1,113 @@
+---
+title: "Cosine_Similarity_Analysis"
+author: "Danny Rosen"
+date: "3/6/2024"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(marginaleffects)
+library(tools)
+```
+
+```{r}
+human_synthetic <- read.csv('../data/experiment_rerun/cosine_similarity_human_synthetic_comparisons.csv')
+
+human_synthetic[, c('affiliation',
+             'size',
+             'similarity_type')] <- lapply(human_synthetic[,
+                                          c('affiliation',  
+                                            'size',   
+                                            'similarity_type')],
+                                factor)
+human_synthetic
+```
+
+```{r}
+synthetic_type <- read.csv('../data/experiment_rerun/cosine_similarity_synthetic_type_comparisons.csv')
+
+synthetic_type[, c('affiliation',
+             'size',
+             'similarity_type')] <- lapply(synthetic_type[,
+                                          c('affiliation',  
+                                            'size',   
+                                            'similarity_type')],
+                                factor)
+#synthetic_type$similarity_type <- relevel(synthetic_type$synthetic_type, ref = "same_video")
+
+synthetic_type
+```
+
+# Let's do some regressions
+
+#For the first table
+```{r}
+human_synthetic_similarity_lm <- lm("similarity ~ similarity_type", human_synthetic)
+summary(human_synthetic_similarity_lm)
+```
+```{r}
+human_synthetic_similarity_with_affiliation_lm <- lm("similarity ~ similarity_type + affiliation", human_synthetic)
+summary(human_synthetic_similarity_with_affiliation_lm)
+```
+
+```{r}
+human_synthetic_similarity_with_affiliation_and_size_lm <- lm("similarity ~ similarity_type * affiliation + size", human_synthetic)
+summary(human_synthetic_similarity_with_affiliation_and_size_lm)
+```
+```{r}
+plot_predictions(human_synthetic_similarity_with_affiliation_and_size_lm, by=c("affiliation", "similarity_type", "size"))
+```
+
+#For the second table
+```{r}
+synthetic_similarity_lm <- lm("similarity ~ similarity_type", synthetic_type)
+summary(synthetic_similarity_lm)
+```
+
+```{r}
+synthetic_similarity_with_affiliation_lm <- lm("similarity ~ similarity_type + affiliation", synthetic_type)
+summary(synthetic_similarity_with_affiliation_lm)
+```
+
+```{r}
+synthetic_similarity_with_affiliation_and_size_lm <- lm("similarity ~ similarity_type + affiliation + size", synthetic_type)
+summary(synthetic_similarity_with_affiliation_and_size_lm)
+```
+
+```{r}
+plot_predictions(synthetic_similarity_with_affiliation_and_size_lm, by=c("affiliation", "similarity_type", "size"))
+```
+
+# Let's plot some distributions
+```{r}
+human_synthetic %>%
+  ggplot(aes(x = similarity, fill = similarity_type)) +
+  geom_density(alpha = 0.5) +
+  facet_wrap(~ affiliation)
+```
+
+```{r}
+human_synthetic %>%
+  ggplot(aes(x = similarity, fill = similarity_type)) +
+  geom_density(alpha = 0.5) +
+  facet_wrap(~ affiliation + size, ncol = 4, nrow = 2)
+```
+
+```{r}
+synthetic_type %>%
+  ggplot(aes(x = similarity, fill = similarity_type)) +
+  geom_density(alpha = 0.5) +
+  facet_wrap(~ affiliation)
+```
+```{r}
+synthetic_type %>%
+  ggplot(aes(x = similarity, color = similarity_type)) +
+  geom_density(alpha = 0.3) +
+  facet_wrap(~ affiliation + size, ncol = 4, nrow = 2)
+```
+
